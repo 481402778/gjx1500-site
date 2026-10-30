@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#07090d">
+<title>电力系统潮流计算：从一张图到一个方程 · gjx1500.top</title>
+<meta name="description" content="从节点功率方程到牛顿-拉夫逊法，把潮流计算的核心拆开讲。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2307090d'/%3E%3Cpath d='M18 4 8 18h6l-2 10 10-14h-6z' fill='%234ea1ff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/site.css">
+<script>document.documentElement.classList.add('js')</script>
+</head>
+<body>
+
+<canvas id="grid" aria-hidden="true"></canvas>
+
+<div class="wrap">
+
+  <header class="nav">
+    <a class="brand" href="/">gjx1500<em>.top</em></a>
+    <nav>
+      <a href="/">首页</a>
+      <a href="/projects/">项目</a>
+      <a href="/notes/" class="on">笔记</a>
+    </nav>
+  </header>
+
+  <article class="article">
+    <div class="meta rise d1">
+      <span>2026.10.30</span>
+      <span class="dim">电力系统</span>
+      <span class="dim">约 8 分钟</span>
+    </div>
+
+    <h1 class="rise d2">电力系统潮流计算：从一张图到一个方程</h1>
+
+    <p class="lede rise d3">
+      潮流计算是《电力系统分析》里第一个真正需要「算」的问题。它听起来抽象，
+      但本质只是一句话：<strong>已知电网长什么样、怎么接、各点要多少功率，求各点电压是多少。</strong>
+    </p>
+
+    <h2>一、它在算什么</h2>
+
+    <p>
+      把电网画成一张图：节点是变电站或母线，边是输电线路。给定线路的阻抗、各节点的负荷和发电功率，
+      潮流计算要求出：
+    </p>
+
+    <ul>
+      <li>每个节点的<strong>电压幅值</strong> V 和<strong>相角</strong> θ</li>
+      <li>每条支路上流过的<strong>有功</strong>和<strong>无功</strong></li>
+      <li>全网<strong>损耗</strong></li>
+    </ul>
+
+    <p>有了这些，才能判断电压有没有越限、线路会不会过载、网损有多大。</p>
+
+    <h2>二、核心是两组方程</h2>
+
+    <p>
+      对每个节点 i，注入的有功和无功可以写成所有节点电压的函数：
+    </p>
+
+    <div class="formula">
+      P<sub>i</sub> = V<sub>i</sub> · Σ<sub>j</sub> V<sub>j</sub> ( G<sub>ij</sub> cos θ<sub>ij</sub> + B<sub>ij</sub> sin θ<sub>ij</sub> )
+    </div>
+
+    <div class="formula">
+      Q<sub>i</sub> = V<sub>i</sub> · Σ<sub>j</sub> V<sub>j</sub> ( G<sub>ij</sub> sin θ<sub>ij</sub> − B<sub>ij</sub> cos θ<sub>ij</sub> )
+    </div>
+
+    <p>
+      其中 θ<sub>ij</sub> = θ<sub>i</sub> − θ<sub>j</sub>，G、B 来自节点导纳矩阵 Y = G + jB。
+      这两组方程是<strong>非线性的</strong>——电压乘电压、还夹着三角函数，所以没有解析解，只能迭代。
+    </p>
+
+    <h2>三、节点分三类，方程才配得平</h2>
+
+    <p>一张 n 个节点的网络有 2n 个未知量（每点一个 V、一个 θ），所以也必须给够 2n 个已知条件。</p>
+
+    <table>
+      <thead>
+        <tr><th>类型</th><th>已知</th><th>待求</th><th>典型场景</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>PQ 节点</td><td>P、Q</td><td>V、θ</td><td>负荷节点</td></tr>
+        <tr><td>PV 节点</td><td>P、V</td><td>Q、θ</td><td>发电机节点</td></tr>
+        <tr><td>平衡节点</td><td>V、θ</td><td>P、Q</td><td>系统参考点，一般只有一个</td></tr>
+      </tbody>
+    </table>
+
+    <p>
+      平衡节点的作用是兜底：全网损耗事先不知道，只能由它来补上那部分功率缺额。
+    </p>
+
+    <h2>四、牛顿-拉夫逊法：五步迭代</h2>
+
+    <p>做法就是把非线性方程在当前点线性化，解一个线性方程组，再往前走一步，重复到收敛。</p>
+
+    <pre><code>1. 给初值          V = 1.0，θ = 0
+2. 算不平衡量      ΔP = P_给定 − P_计算
+                  ΔQ = Q_给定 − Q_计算
+3. 组装雅可比矩阵  J（对 V、θ 的偏导）
+4. 解线性方程      J · [Δθ; ΔV/V] = [ΔP; ΔQ]
+5. 更新并检查      V、θ 加上修正量，
+                  若 max|ΔP, ΔQ| &lt; ε 则收敛，否则回到第 2 步</code></pre>
+
+    <p>
+      ε 一般取 1e-5 到 1e-8（标幺值）。正常网络三四次迭代就收敛，初值给得好会更快。
+    </p>
+
+    <blockquote>
+      <p>雅可比矩阵是这一步最费事的地方：它随迭代变化，每次都要求一遍偏导。工程实现里通常会利用稀疏性加速。</p>
+    </blockquote>
+
+    <h2>五、为什么值得算</h2>
+
+    <ul>
+      <li><strong>电压越限判断</strong>：重负荷时末端电压可能掉到 0.9 标幺以下，必须提前发现</li>
+      <li><strong>网损估算</strong>：损耗直接等于成本</li>
+      <li><strong>后续分析的地基</strong>：稳定分析、短路计算、优化调度都建立在潮流结果之上</li>
+    </ul>
+
+    <h2>六、接下来</h2>
+
+    <p>
+      光看方程没什么感觉。所以我打算做一个<strong>IEEE 14 节点</strong>的可视化页面：拖动某个节点的负荷，
+      立刻看到全网电压分布和支路潮流怎么变。代码会开源，链接放到<a href="/projects/">项目页</a>。
+    </p>
+
+    <a class="back" href="/notes/">← 返回笔记列表</a>
+  </article>
+
+  <footer>
+    <span>© 2026 gjx1500.top</span>
+    <span class="fsocial"><a href="/">首页</a><a href="/projects/">项目</a></span>
+    <span>保持好奇，保持动手</span>
+  </footer>
+
+</div>
+
+<script src="/assets/bg.js"></script>
+</body>
+</html>

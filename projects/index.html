@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#07090d">
+<title>项目 · gjx1500.top</title>
+<meta name="description" content="做过的和要做的项目：潮流计算、光伏预测、储能优化、能耗监测。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2307090d'/%3E%3Cpath d='M18 4 8 18h6l-2 10 10-14h-6z' fill='%234ea1ff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/assets/site.css">
+<script>document.documentElement.classList.add('js')</script>
+</head>
+<body>
+
+<canvas id="grid" aria-hidden="true"></canvas>
+
+<div class="wrap">
+
+  <header class="nav">
+    <a class="brand" href="/">gjx1500<em>.top</em></a>
+    <nav>
+      <a href="/">首页</a>
+      <a href="/projects/" class="on">项目</a>
+      <a href="/notes/">笔记</a>
+    </nav>
+  </header>
+
+  <main class="page">
+    <div class="page-head">
+      <p class="kicker rise d1"><span class="dot"></span>Projects</p>
+      <h1 class="rise d2">做过的，和要做的</h1>
+      <p class="desc rise d3">
+        从课程作业到自己的折腾。每个项目都尽量留下能跑的代码、真实的数据和一张结果图——
+        能复现的才算作品。
+      </p>
+    </div>
+
+    <div class="projects">
+
+      <article class="project reveal">
+        <div class="project-top">
+          <span class="num">01</span>
+          <span class="badge doing">进行中</span>
+        </div>
+        <h3>IEEE 14 节点潮流计算可视化</h3>
+        <p>在浏览器里拖动负荷和发电机出力，实时看每个节点的电压、每条支路的潮流和全网损耗。纯前端实现牛顿-拉夫逊法，不需要后端。</p>
+        <div class="stack"><span>JavaScript</span><span>Canvas</span><span>电力系统分析</span></div>
+        <a class="link muted" href="#">即将上线</a>
+      </article>
+
+      <article class="project reveal">
+        <div class="project-top">
+          <span class="num">02</span>
+          <span class="badge plan">计划中</span>
+        </div>
+        <h3>光伏出力预测</h3>
+        <p>用公开的气象与辐照数据训练时序模型，对比持续性基线、LightGBM 和 LSTM 的误差，并展示「预测 vs 实际」曲线与特征重要性。</p>
+        <div class="stack"><span>Python</span><span>pandas</span><span>LightGBM</span><span>PVGIS</span></div>
+        <span class="link muted">待开始</span>
+      </article>
+
+      <article class="project reveal">
+        <div class="project-top">
+          <span class="num">03</span>
+          <span class="badge plan">计划中</span>
+        </div>
+        <h3>储能容量配置与收益测算</h3>
+        <p>输入峰谷电价和日负荷曲线，用线性规划求解最优储能容量与充放电策略，输出年收益、回本年限，支持交互式调参。</p>
+        <div class="stack"><span>Python</span><span>线性规划</span><span>ECharts</span></div>
+        <span class="link muted">待开始</span>
+      </article>
+
+      <article class="project reveal">
+        <div class="project-top">
+          <span class="num">04</span>
+          <span class="badge plan">计划中</span>
+        </div>
+        <h3>宿舍用电监测</h3>
+        <p>用 ESP32 加互感器采集电流电压，MQTT 上传，网页端实时看功率曲线和用电统计。字面意义上的「能源 + 互联网」。</p>
+        <div class="stack"><span>ESP32</span><span>MQTT</span><span>传感器</span></div>
+        <span class="link muted">待开始</span>
+      </article>
+
+    </div>
+  </main>
+
+  <footer>
+    <span>© 2026 gjx1500.top</span>
+    <span class="fsocial"><a href="/">首页</a><a href="/notes/">笔记</a></span>
+    <span>保持好奇，保持动手</span>
+  </footer>
+
+</div>
+
+<script src="/assets/bg.js"></script>
+</body>
+</html>
